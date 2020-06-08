@@ -1,4 +1,3 @@
-//NEW
 //step 1
 WITH [1, 2, 5] as selection
 MATCH (v:Vertex)
