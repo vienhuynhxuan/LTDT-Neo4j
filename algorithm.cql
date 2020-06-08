@@ -1,37 +1,38 @@
+//NEW
 //step 1
-with [1, 2, 5] as selection
-match (v:Vertex)
-where v.number in selection
-with collect(v) as vertices
-unwind vertices as v1
-with
+WITH [1, 2, 5] as selection
+MATCH (v:Vertex)
+WHERE v.number in selection
+WITH collect(v) as vertices
+UNWIND vertices as v1
+WITH
 	v1,
     [v in vertices where v.number > v1.number] as v2s,
     vertices
-unwind v2s as v2
-call algo.shortestPath.stream(
+UNWIND v2s as v2
+CALL algo.shortestPath.stream(
 	v1,
     v2,
     'cost',
     {relationshipQuery: 'LINK_TO'}
 )
-yield nodeId, cost
-//step 2
-with
+YIELD nodeId, cost
+WITH
 	v1,
     v2,
     max(cost) as totalCost,
     collect(nodeId) as shortestHopNodeIds,
     vertices
-merge (v1)-[r:SHORTEST_ROUTE_TO]-(v2)
-set r.cost = totalCost
-set r.shortestHopNodeIds = shortestHopNodeIds
-with
+MERGE (v1)-[r:SHORTEST_ROUTE_TO]-(v2)
+SET r.cost = totalCost
+SET r.shortestHopNodeIds = shortestHopNodeIds
+//step 2
+WITH
 	v1,
     v2,
     (size(vertices) - 1) as level,
     vertices
-call apoc.path.expandConfig(
+CALL apoc.path.expandConfig(
 	v1,
     {
     	relationshipFilter: 'SHORTEST_ROUTE_TO',
